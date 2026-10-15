@@ -1,6 +1,7 @@
 import React from "react";
-import { Header } from "../components/common/header";
-import { Footer } from "../components/common/footer";
+import { Header } from "@/app/components/common/header";
+import { Footer } from "@/app/components/common/footer";
+import { AppointmentModal } from "@/app/components/appointment/AppointmentModal";
 
 export default function MainLayout({
   children,
@@ -8,10 +9,12 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/50 text-slate-900 selection:bg-teal-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
-      <div className="flex-1 flex flex-col">{children}</div>
+      <main className="flex-1">{children}</main>
       <Footer />
+      {/* Global Appointment Booking Modal triggered from Cart Popup */}
+      <AppointmentModal />
     </div>
   );
 }

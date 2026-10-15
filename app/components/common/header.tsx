@@ -1,203 +1,189 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { userStore } from "@/app/store/AuthStore";
+import { useCartStore } from "@/app/store/CartStore";
+import { CartPopup } from "../cart/CartPopup";
 import {
-  HeartPulse,
-  PhoneCall,
+  ShoppingBag,
   User as UserIcon,
   LogOut,
-  CalendarDays,
+  ChevronDown,
   Menu,
   X,
-  ChevronDown,
-  Sparkles,
-  Search,
-  FileText,
+  HeartPulse,
+  PhoneCall,
+  PackageCheck,
 } from "lucide-react";
-import { userStore } from "../../store/AuthStore";
 
-export const Header = () => {
+export const Header: React.FC = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const { user, token, setLogout } = userStore();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { toggleCart, getTotalItems } = useCartStore();
 
-  useEffect(() => {
+  const [mounted, setMounted] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  React.useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setUserDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Detect scroll for refined glass elevation
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const navLinks = [
-    { label: "Trang chủ", href: "/" },
-    { label: "Chuyên khoa", href: "#specialties" },
-    { label: "Quy trình khám", href: "#booking-flow" },
-    { label: "Cẩm nang y khoa", href: "#articles" },
-    { label: "Bác sĩ giỏi", href: "#doctors" },
-  ];
+  const totalItems = mounted ? getTotalItems() : 0;
+  const isLoggedIn = mounted && !!token && !!user;
 
   const handleLogout = () => {
     setLogout();
     setUserDropdownOpen(false);
+    router.push("/");
+  };
+
+  const navLinks = [
+    { label: "Trang chủ", href: "/" },
+    { label: "Gói khám bệnh", href: "/packages" },
+    { label: "Bác sĩ", href: "/doctors" },
+    { label: "Cẩm nang y tế", href: "/articles" },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(href);
   };
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-xs py-3"
-          : "bg-white/95 backdrop-blur-md border-b border-slate-100 py-4"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4">
+    <>
+      <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-xs">
+        {/* Top announcement bar */}
+        <div className="hidden md:flex items-center justify-between px-6 lg:px-12 py-1.5 bg-slate-900 text-slate-300 text-xs">
+          <div className="flex items-center gap-6">
+            <span className="flex items-center gap-1.5">
+              <PhoneCall className="w-3.5 h-3.5 text-teal-400" />
+              <span>Hotline 24/7: <strong className="text-white">1900 6868</strong></span>
+            </span>
+            <span className="text-slate-400">|</span>
+            <span>Địa chỉ: 123 Đường Sức Khỏe, Quận 1, TP. Hồ Chí Minh</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs">
+            <span className="text-teal-400 flex items-center gap-1 font-medium">
+              <HeartPulse className="w-3.5 h-3.5" /> Khám chữa bệnh uy tín - Chuẩn y khoa
+            </span>
+          </div>
+        </div>
+
+        {/* Main Navbar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-teal-600/25 group-hover:scale-105 transition-transform duration-300">
-              <HeartPulse className="w-5 h-5 transition-transform duration-300 group-hover:rotate-6" />
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-600 to-teal-800 flex items-center justify-center text-white shadow-md shadow-teal-700/25 group-hover:scale-105 transition-transform">
+              <HeartPulse className="w-6 h-6 stroke-[2.2]" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-teal-700 transition-colors">
-                Medi<span className="text-teal-600">Care</span>
-              </span>
-              <span className="text-[10px] font-medium tracking-wide text-slate-500 uppercase">
-                Phòng Khám Đa Khoa
-              </span>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-teal-700 transition-colors">
+                  MediCare
+                </span>
+                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-teal-100 text-teal-800 rounded-md">
+                  CLINIC
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium">
+                Nền tảng đặt lịch khám chất lượng cao
+              </p>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            {navLinks.map((item) => {
-              const isActive = pathname === item.href;
+          {/* Navigation Links (Desktop) - Switching between dedicated pages */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
               return (
                 <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`px-3.5 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
-                    isActive
-                      ? "text-teal-700 bg-teal-50/80 font-semibold"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                  key={link.href}
+                  href={link.href}
+                  className={`px-4 py-2 rounded-xl text-sm transition-all ${
+                    active
+                      ? "font-bold text-teal-800 bg-teal-50 border border-teal-200/60 shadow-2xs"
+                      : "font-medium text-slate-600 hover:text-teal-700 hover:bg-slate-50"
                   }`}
                 >
-                  {item.label}
+                  {link.label}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Right Action Island */}
+          {/* Function Actions on the right */}
           <div className="flex items-center gap-3">
-            {/* Quick Hotline Pill (Desktop) */}
-            <a
-              href="tel:19006868"
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-teal-50 text-slate-700 hover:text-teal-700 border border-slate-200/60 transition-colors text-xs font-semibold"
+            {/* Shopping Cart Button */}
+            <button
+              id="cart-popup-trigger-button"
+              onClick={toggleCart}
+              className="relative w-11 h-11 rounded-xl bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-700 border border-slate-200 hover:border-teal-200 transition-all flex items-center justify-center cursor-pointer group"
+              title="Xem giỏ hàng gói khám"
+              aria-label="Giỏ hàng"
             >
-              <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-teal-700">
-                <PhoneCall className="w-3 h-3" />
-              </div>
-              <span>1900 6868</span>
-            </a>
+              <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-teal-600 text-white text-[11px] font-bold flex items-center justify-center shadow-xs animate-in zoom-in duration-150">
+                  {totalItems}
+                </span>
+              )}
+            </button>
 
-            {/* User Auth Section */}
-            {mounted && token && user ? (
-              <div className="relative" ref={dropdownRef}>
+            {/* User Account State */}
+            {isLoggedIn ? (
+              <div className="relative">
                 <button
-                  type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-2xs"
-                  aria-expanded={userDropdownOpen}
+                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl hover:bg-slate-50 border border-slate-200 transition-all cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-teal-100">
-                    {user.avatar ? (
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-teal-100 text-teal-800 font-bold text-xs flex items-center justify-center">
+                    {user?.avatar ? (
                       <img
                         src={user.avatar}
                         alt={user.full_name}
-                        className="w-full h-full rounded-full object-cover"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      user.full_name?.charAt(0).toUpperCase() || "U"
+                      user?.full_name?.charAt(0).toUpperCase() || "U"
                     )}
                   </div>
-                  <div className="hidden sm:flex flex-col text-left">
-                    <span className="text-xs font-semibold text-slate-900 leading-tight max-w-[110px] truncate">
-                      {user.full_name || "Khách hàng"}
-                    </span>
-                    <span className="text-[10px] text-teal-600 font-medium leading-none">
-                      {user.role === "ADMIN" ? "Quản trị viên" : "Bệnh nhân"}
-                    </span>
-                  </div>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                      userDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
+                  <span className="text-xs font-semibold text-slate-800 max-w-[120px] truncate hidden md:inline-block">
+                    {user?.full_name}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </button>
 
                 {/* Dropdown Menu */}
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-slate-150 shadow-xl shadow-slate-200/50 p-2 z-50 text-sm animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-3 py-2 border-b border-slate-100 mb-1">
-                      <p className="font-semibold text-slate-800 truncate">
-                        {user.full_name}
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in duration-150">
+                    <div className="px-4 py-2 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-800 truncate">
+                        {user?.full_name}
                       </p>
-                      <p className="text-xs text-slate-500 truncate">
-                        {user.email}
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {user?.email}
                       </p>
                     </div>
 
                     <Link
                       href="/profile"
                       onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-teal-700 transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-colors"
                     >
                       <UserIcon className="w-4 h-4 text-slate-400" />
                       <span>Hồ sơ cá nhân</span>
                     </Link>
-
-                    <Link
-                      href="/my-appointments"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-teal-700 transition-colors"
-                    >
-                      <CalendarDays className="w-4 h-4 text-slate-400" />
-                      <span>Lịch khám đã đặt</span>
-                    </Link>
-
-                    <div className="my-1 border-t border-slate-100" />
-
                     <button
-                      type="button"
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors text-left font-medium"
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="w-4 h-4 text-rose-500" />
                       <span>Đăng xuất</span>
                     </button>
                   </div>
@@ -207,83 +193,73 @@ export const Header = () => {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-3.5 py-2 text-sm font-medium text-slate-700 hover:text-teal-700 hover:bg-slate-100/70 rounded-full transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-teal-700 hover:bg-slate-100 transition-all"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   href="/register"
-                  className="group inline-flex items-center gap-2 pl-4 pr-1.5 py-1.5 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 active:scale-[0.98] rounded-full shadow-sm shadow-teal-600/25 transition-all duration-200"
+                  className="hidden sm:inline-flex px-4 py-2 rounded-xl text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white shadow-xs transition-all"
                 >
-                  <span>Đăng ký</span>
-                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-200">
-                    <Sparkles className="w-3.5 h-3.5 text-white" />
-                  </div>
+                  Đăng ký
                 </Link>
               </div>
             )}
 
-            {/* Mobile Hamburger Button */}
+            {/* Mobile Menu Toggle */}
             <button
-              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-              aria-label="Toggle menu"
+              className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer"
             >
-              {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Slide-down Drawer */}
+        {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden pt-4 pb-6 border-t border-slate-100 mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col gap-1.5">
-              {navLinks.map((item) => (
+          <div className="lg:hidden border-t border-slate-100 bg-white px-6 py-4 space-y-2">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
                 <Link
-                  key={item.label}
-                  href={item.href}
+                  key={link.href}
+                  href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-2.5 text-base font-medium rounded-xl text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                  className={`block text-sm py-2 px-3 rounded-xl transition-colors ${
+                    active
+                      ? "font-bold text-teal-800 bg-teal-50"
+                      : "font-medium text-slate-600 hover:text-teal-700"
+                  }`}
                 >
-                  {item.label}
+                  {link.label}
                 </Link>
-              ))}
-              <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-2">
-                <a
-                  href="tel:19006868"
-                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-100 text-slate-800 text-sm font-semibold"
+              );
+            })}
+            {!isLoggedIn && (
+              <div className="pt-2 border-t border-slate-100 flex gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 rounded-xl text-xs font-semibold border border-slate-200 text-slate-700"
                 >
-                  <PhoneCall className="w-4 h-4 text-teal-600" />
-                  <span>Tổng đài tư vấn: 1900 6868</span>
-                </a>
-                {mounted && !token && (
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="py-2.5 text-center text-sm font-medium rounded-xl border border-slate-200 text-slate-800 hover:bg-slate-50"
-                    >
-                      Đăng nhập
-                    </Link>
-                    <Link
-                      href="/register"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="py-2.5 text-center text-sm font-semibold rounded-xl bg-teal-600 text-white hover:bg-teal-700"
-                    >
-                      Đăng ký ngay
-                    </Link>
-                  </div>
-                )}
+                  Đăng nhập
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 rounded-xl text-xs font-semibold bg-teal-700 text-white"
+                >
+                  Đăng ký
+                </Link>
               </div>
-            </div>
+            )}
           </div>
         )}
-      </div>
-    </header>
+      </header>
+
+      {/* Cart Popup Component */}
+      <CartPopup />
+    </>
   );
 };
