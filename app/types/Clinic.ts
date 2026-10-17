@@ -6,6 +6,16 @@ export interface Banner {
   sort_order: number;
   is_active: boolean;
 }
+export interface Specialty {
+  id: number;
+  name: string;
+  description?: string | null;
+  image_url?: string | null;
+  deleted_at?: string | null;
+  _count?: {
+    doctors?: number;
+  };
+}
 
 export interface Doctor {
   id: number;

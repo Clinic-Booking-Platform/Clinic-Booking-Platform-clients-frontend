@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { userStore } from "@/app/store/AuthStore";
 import { LoginRequiredModal } from "@/app/components/common/LoginRequiredModal";
+import { Pagination } from "@/app/components/common/Pagination";
 
 export default function PackagesPage() {
   const { token } = userStore();
@@ -26,6 +27,8 @@ export default function PackagesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceFilter, setPriceFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
   const [addingId, setAddingId] = useState<number | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -41,6 +44,11 @@ export default function PackagesPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Reset page to 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, priceFilter]);
 
   const handleAddToCart = async (pkg: Package) => {
     const currentToken = token || (typeof window !== "undefined" ? localStorage.getItem("token") : null);
@@ -81,6 +89,13 @@ export default function PackagesPage() {
       return matchSearch && matchPrice;
     });
   }, [packages, searchTerm, priceFilter]);
+
+  // Paginated items
+  const totalPages = Math.ceil(filteredPackages.length / pageSize) || 1;
+  const paginatedPackages = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredPackages.slice(start, start + pageSize);
+  }, [filteredPackages, currentPage, pageSize]);
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-24">
@@ -183,7 +198,7 @@ export default function PackagesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPackages.map((pkg) => {
+            {paginatedPackages.map((pkg) => {
               const price = Number(pkg.price);
               const discountPrice = pkg.discount_price
                 ? Number(pkg.discount_price)
@@ -293,6 +308,19 @@ export default function PackagesPage() {
             })}
           </div>
         )}
+
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredPackages.length}
+          pageSize={pageSize}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            window.scrollTo({ top: 350, behavior: "smooth" });
+          }}
+          itemName="gói khám"
+        />
       </div>
 
       {/* Assurance banner */}

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Article } from "@/app/types/Clinic";
 import { getArticles } from "@/app/lib/clinic.api";
 import { ArticleModal } from "@/app/components/home/ArticleModal";
+import { Pagination } from "@/app/components/common/Pagination";
 import {
   BookOpen,
   Calendar,
@@ -21,6 +22,8 @@ export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("all");
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
 
   useEffect(() => {
     getArticles()
@@ -31,6 +34,11 @@ export default function ArticlesPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Reset page to 1 when search or specialty changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSpecialty]);
 
   // Filtered articles
   const filteredArticles = useMemo(() => {
@@ -48,6 +56,13 @@ export default function ArticlesPage() {
       return matchSearch && matchSpecialty;
     });
   }, [articles, searchTerm, selectedSpecialty]);
+
+  // Paginated items
+  const totalPages = Math.ceil(filteredArticles.length / pageSize) || 1;
+  const paginatedArticles = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredArticles.slice(start, start + pageSize);
+  }, [filteredArticles, currentPage, pageSize]);
 
   return (
     <>
@@ -86,24 +101,31 @@ export default function ArticlesPage() {
 
             {/* Specialty Filter Tabs */}
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              {[
-                { id: "all", label: "Tất cả chủ đề" },
-                { id: "tim", label: "Tim mạch" },
-                { id: "nội tiết", label: "Nội tiết - Tiểu đường" },
-                { id: "tiêu hóa", label: "Tiêu hóa - Dạ dày" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedSpecialty(tab.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                    selectedSpecialty === tab.id
-                      ? "bg-teal-700 text-white shadow-xs font-semibold"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+              {(() => {
+                const specMap = new Map<string, string>();
+                articles.forEach((a) => {
+                  if (a.specialty?.name) {
+                    specMap.set(a.specialty.name.toLowerCase(), a.specialty.name);
+                  }
+                });
+                const tabs = [
+                  { id: "all", label: "Tất cả chủ đề" },
+                  ...Array.from(specMap.entries()).map(([id, label]) => ({ id, label })),
+                ];
+                return tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedSpecialty(tab.id)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                      selectedSpecialty === tab.id
+                        ? "bg-teal-700 text-white shadow-xs font-semibold"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ));
+              })()}
             </div>
           </div>
         </div>
@@ -147,7 +169,7 @@ export default function ArticlesPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredArticles.map((art) => {
+              {paginatedArticles.map((art) => {
                 const dateStr = new Date(art.created_at).toLocaleDateString(
                   "vi-VN",
                   {
@@ -234,6 +256,19 @@ export default function ArticlesPage() {
               })}
             </div>
           )}
+
+          {/* Pagination Controls */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredArticles.length}
+            pageSize={pageSize}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 350, behavior: "smooth" });
+            }}
+            itemName="bài viết"
+          />
         </div>
       </div>
 
