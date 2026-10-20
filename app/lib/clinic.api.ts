@@ -974,23 +974,31 @@ export const bookAppointmentFromOrderAPI = async (
  * Lấy lịch sử tất cả các cuộc hẹn của người dùng
  */
 export const getUserAppointmentsAPI = async (): Promise<Appointment[]> => {
-  try {
-    const res = await api.get("/appointments");
-    if (res.data?.data && Array.isArray(res.data.data)) {
-      return res.data.data;
-    }
-    if (res.data?.data?.appointments && Array.isArray(res.data.data.appointments)) {
-      return res.data.data.appointments;
-    }
-  } catch {}
+  const res = await api.get<{
+    data?: Appointment[] | {
+      appointments?: Appointment[];
+      items?: Appointment[];
+      results?: Appointment[];
+      data?: Appointment[];
+    };
+  }>("/appointments");
+  const payload = res.data?.data;
 
-  const orders = getMockOrders();
-  const appointments: Appointment[] = [];
-  orders.forEach((o) => {
-    if (o.appointments) {
-      appointments.push(...o.appointments);
-    }
-  });
-  return appointments;
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload && Array.isArray(payload.appointments)) {
+    return payload.appointments;
+  }
+  if (payload && Array.isArray(payload.items)) {
+    return payload.items;
+  }
+  if (payload && Array.isArray(payload.results)) {
+    return payload.results;
+  }
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  throw new Error("Phản hồi danh sách lịch hẹn không đúng định dạng.");
 };
-
