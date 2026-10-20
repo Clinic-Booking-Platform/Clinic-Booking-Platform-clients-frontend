@@ -11,6 +11,7 @@ import {
   BookFromOrderPayload,
   Appointment,
   CheckoutCartResponse,
+  Specialty,
 } from "../types/Clinic";
 
 // Fallback high-fidelity mock data matching backend schema
@@ -517,23 +518,42 @@ export const getBanners = async (): Promise<Banner[]> => {
     if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
       return res.data.data;
     }
-  } catch {
-    // Graceful fallback to mock data
+    if (Array.isArray(res.data) && res.data.length > 0) {
+      return res.data;
+    }
+  } catch (err: any) {
+    console.warn("[API getBanners] Failed (backend requires login token):", err?.response?.data || err.message);
   }
   return MOCK_BANNERS;
 };
 
-export const getArticles = async (params?: { page?: number; search?: string; specialty_id?: number }): Promise<Article[]> => {
+export const getArticles = async (params?: { page?: number; search?: string; specialty_id?: number; pageSize?: number }): Promise<Article[]> => {
   try {
-    const res = await api.get("/articles", { params });
-    if (res.data?.data?.articles && Array.isArray(res.data.data.articles) && res.data.data.articles.length > 0) {
-      return res.data.data.articles;
+    const firstRes = await api.get("/articles", { params: { page: 1, ...params } });
+    if (firstRes.data?.data?.articles && Array.isArray(firstRes.data.data.articles)) {
+      let allArticles = [...firstRes.data.data.articles];
+      const totalPages = firstRes.data.data.pagination?.totalPages || 1;
+      if (!params?.page && totalPages > 1) {
+        const remainingReqs = [];
+        for (let p = 2; p <= totalPages; p++) {
+          remainingReqs.push(
+            api.get("/articles", { params: { page: p, ...params } })
+          );
+        }
+        const responses = await Promise.all(remainingReqs);
+        for (const r of responses) {
+          if (r.data?.data?.articles && Array.isArray(r.data.data.articles)) {
+            allArticles.push(...r.data.data.articles);
+          }
+        }
+      }
+      return allArticles.filter((a: any) => !a.deleted_at);
     }
-    if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
-      return res.data.data;
+    if (Array.isArray(firstRes.data?.data) && firstRes.data.data.length > 0) {
+      return firstRes.data.data;
     }
-  } catch {
-    // Graceful fallback to mock data
+  } catch (err: any) {
+    console.warn("[API getArticles] Failed:", err?.response?.data || err.message);
   }
   return MOCK_ARTICLES;
 };
@@ -544,21 +564,25 @@ export const getArticleBySlug = async (slug: string): Promise<Article | null> =>
     if (res.data?.data) {
       return res.data.data;
     }
-  } catch {
-    // Graceful fallback
+  } catch (err: any) {
+    console.warn(`[API getArticleBySlug] Failed for "${slug}":`, err?.response?.data || err.message);
   }
   const found = MOCK_ARTICLES.find((a) => a.slug === slug);
   return found || null;
 };
 
-export const getDoctors = async (params?: { specialty_id?: number; search?: string }): Promise<Doctor[]> => {
+export const getDoctors = async (params?: { specialty_id?: number; search?: string; pageSize?: number; page?: number }): Promise<Doctor[]> => {
   try {
-    const res = await api.get("/doctors", { params });
-    if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-      return res.data.data;
+    const res = await api.get("/doctors", { params: { all: true, ...params } });
+    // Backend returns { status: 'success', data: { doctors: [...], pagination: {...} } }
+    if (res.data?.data?.doctors && Array.isArray(res.data.data.doctors) && res.data.data.doctors.length > 0) {
+      return res.data.data.doctors.filter((d: any) => !d.deleted_at && d.status !== "INACTIVE");
     }
-  } catch {
-    // Graceful fallback
+    if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+      return res.data.data.filter((d: any) => !d.deleted_at);
+    }
+  } catch (err: any) {
+    console.warn("[API getDoctors] Failed (backend requires login token):", err?.response?.data || err.message);
   }
   return MOCK_DOCTORS;
 };
@@ -569,23 +593,60 @@ export const getDoctorById = async (id: number | string): Promise<Doctor | null>
     if (res.data?.data) {
       return res.data.data;
     }
-  } catch {
-    // Graceful fallback
+  } catch (err: any) {
+    console.warn(`[API getDoctorById] Failed for ID ${id}:`, err?.response?.data || err.message);
   }
   const found = MOCK_DOCTORS.find((d) => d.id === Number(id));
   return found || null;
 };
 
-export const getPackages = async (params?: { search?: string; status?: string }): Promise<Package[]> => {
+export const getSpecialties = async (params?: { pageSize?: number }): Promise<Specialty[]> => {
   try {
-    const res = await api.get("/packages", {
-      params: { status: "active", ...params },
-    });
+    const res = await api.get("/specialties", { params: { pageSize: 50, ...params } });
+    // Backend returns { status: 'success', data: { specialties: [...], pagination: {...} } }
+    if (res.data?.data?.specialties && Array.isArray(res.data.data.specialties) && res.data.data.specialties.length > 0) {
+      return res.data.data.specialties;
+    }
     if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
       return res.data.data;
     }
-  } catch {
-    // Graceful fallback
+  } catch (err: any) {
+    console.warn("[API getSpecialties] Failed (backend requires login token):", err?.response?.data || err.message);
+  }
+  return [];
+};
+
+export const getPackages = async (params?: { search?: string; status?: string; page?: number; pageSize?: number }): Promise<Package[]> => {
+  try {
+    const firstRes = await api.get("/packages", {
+      params: { status: "active", page: 1, ...params },
+    });
+    // Backend returns { status: 'success', data: { packages: [...], pagination: {...} } }
+    if (firstRes.data?.data?.packages && Array.isArray(firstRes.data.data.packages)) {
+      let allPkgs = [...firstRes.data.data.packages];
+      const totalPages = firstRes.data.data.pagination?.totalPages || 1;
+      // If caller did not request a single page, fetch remaining pages to retrieve all active packages
+      if (!params?.page && totalPages > 1) {
+        const remainingReqs = [];
+        for (let p = 2; p <= totalPages; p++) {
+          remainingReqs.push(
+            api.get("/packages", { params: { status: "active", page: p, ...params } })
+          );
+        }
+        const responses = await Promise.all(remainingReqs);
+        for (const r of responses) {
+          if (r.data?.data?.packages && Array.isArray(r.data.data.packages)) {
+            allPkgs.push(...r.data.data.packages);
+          }
+        }
+      }
+      return allPkgs.filter((p: any) => !p.deleted_at);
+    }
+    if (firstRes.data?.data && Array.isArray(firstRes.data.data) && firstRes.data.data.length > 0) {
+      return firstRes.data.data.filter((p: any) => !p.deleted_at);
+    }
+  } catch (err: any) {
+    console.warn("[API getPackages] Failed (backend requires login token):", err?.response?.data || err.message);
   }
   return MOCK_PACKAGES.filter((p: any) => !p.deleted_at);
 };
@@ -596,8 +657,8 @@ export const getPackageById = async (id: number | string): Promise<Package | nul
     if (res.data?.data) {
       return res.data.data;
     }
-  } catch {
-    // Graceful fallback to mock data
+  } catch (err: any) {
+    console.warn(`[API getPackageById] Failed for ID ${id}:`, err?.response?.data || err.message);
   }
   const found = MOCK_PACKAGES.find((p) => p.id === Number(id));
   return found || null;
@@ -609,8 +670,8 @@ export const getCart = async (): Promise<CartData | null> => {
     if (res.data?.data) {
       return res.data.data;
     }
-  } catch {
-    // Graceful fallback
+  } catch (err: any) {
+    console.warn("[API getCart] Failed:", err?.response?.data || err.message);
   }
   return null;
 };
@@ -913,23 +974,31 @@ export const bookAppointmentFromOrderAPI = async (
  * Lấy lịch sử tất cả các cuộc hẹn của người dùng
  */
 export const getUserAppointmentsAPI = async (): Promise<Appointment[]> => {
-  try {
-    const res = await api.get("/appointments");
-    if (res.data?.data && Array.isArray(res.data.data)) {
-      return res.data.data;
-    }
-    if (res.data?.data?.appointments && Array.isArray(res.data.data.appointments)) {
-      return res.data.data.appointments;
-    }
-  } catch {}
+  const res = await api.get<{
+    data?: Appointment[] | {
+      appointments?: Appointment[];
+      items?: Appointment[];
+      results?: Appointment[];
+      data?: Appointment[];
+    };
+  }>("/appointments");
+  const payload = res.data?.data;
 
-  const orders = getMockOrders();
-  const appointments: Appointment[] = [];
-  orders.forEach((o) => {
-    if (o.appointments) {
-      appointments.push(...o.appointments);
-    }
-  });
-  return appointments;
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload && Array.isArray(payload.appointments)) {
+    return payload.appointments;
+  }
+  if (payload && Array.isArray(payload.items)) {
+    return payload.items;
+  }
+  if (payload && Array.isArray(payload.results)) {
+    return payload.results;
+  }
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  throw new Error("Phản hồi danh sách lịch hẹn không đúng định dạng.");
 };
-

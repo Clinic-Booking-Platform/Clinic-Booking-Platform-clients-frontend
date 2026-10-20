@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Doctor } from "@/app/types/Clinic";
 import { getDoctors } from "@/app/lib/clinic.api";
 import { DoctorDetailModal } from "@/app/components/doctor/DoctorDetailModal";
+import { Pagination } from "@/app/components/common/Pagination";
 import {
   Stethoscope,
   Award,
@@ -23,6 +24,8 @@ export default function DoctorsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("all");
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
 
   useEffect(() => {
     // Lấy danh sách tất cả các bác sĩ
@@ -34,6 +37,11 @@ export default function DoctorsPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Reset page to 1 when search or specialty changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSpecialty]);
 
   // Filtered doctors
   const filteredDoctors = useMemo(() => {
@@ -54,6 +62,13 @@ export default function DoctorsPage() {
       return matchSearch && matchSpecialty;
     });
   }, [doctors, searchTerm, selectedSpecialty]);
+
+  // Paginated items
+  const totalPages = Math.ceil(filteredDoctors.length / pageSize) || 1;
+  const paginatedDoctors = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredDoctors.slice(start, start + pageSize);
+  }, [filteredDoctors, currentPage, pageSize]);
 
   return (
     <>
@@ -92,27 +107,31 @@ export default function DoctorsPage() {
 
             {/* Specialty Filter Tabs */}
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              {[
-                { id: "all", label: "Tất cả chuyên khoa" },
-                { id: "tim", label: "Tim mạch" },
-                { id: "nội tiết", label: "Nội tiết" },
-                { id: "tiêu hóa", label: "Tiêu hóa" },
-                { id: "nhi", label: "Nhi khoa" },
-                { id: "tai mũi họng", label: "Tai Mũi Họng" },
-                { id: "da liễu", label: "Da liễu" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedSpecialty(tab.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                    selectedSpecialty === tab.id
-                      ? "bg-teal-700 text-white shadow-xs font-semibold"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+              {(() => {
+                const specMap = new Map<string, string>();
+                doctors.forEach((d) => {
+                  if (d.specialty?.name) {
+                    specMap.set(d.specialty.name.toLowerCase(), d.specialty.name);
+                  }
+                });
+                const tabs = [
+                  { id: "all", label: "Tất cả chuyên khoa" },
+                  ...Array.from(specMap.entries()).map(([id, label]) => ({ id, label })),
+                ];
+                return tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedSpecialty(tab.id)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                      selectedSpecialty === tab.id
+                        ? "bg-teal-700 text-white shadow-xs font-semibold"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ));
+              })()}
             </div>
           </div>
         </div>
@@ -156,7 +175,7 @@ export default function DoctorsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredDoctors.map((doctor) => {
+              {paginatedDoctors.map((doctor) => {
                 const avatar = doctor.user.avatar;
                 const name = doctor.user.full_name;
                 const specialtyName = doctor.specialty?.name || "Bác sĩ chuyên khoa";
@@ -257,6 +276,19 @@ export default function DoctorsPage() {
               })}
             </div>
           )}
+
+          {/* Pagination Controls */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredDoctors.length}
+            pageSize={pageSize}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 350, behavior: "smooth" });
+            }}
+            itemName="bác sĩ"
+          />
         </div>
 
         {/* Medical Ethics Pledge */}
