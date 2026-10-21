@@ -1,0 +1,451 @@
+
+I Đặc tả API
+Nhóm xác thực và public(Auth & Public APIs)
+Endpoint
+Method
+Tên API
+Quyền hạn
+/login
+POST
+Đăng nhập hệ thống(Lấy Access Token)
+Public
+/register
+POST
+Đăng kí tài khoản bệnh nhân mới
+Public
+/articles
+GET
+Lấy danh sách bài báo
+Public
+/articles/{slug}
+GET
+Lấy thông tin chi tiết bài báo
+Public
+/payment/vnpay-return
+GET
+Tiếp nhận và xác thực kết quả thanh toán từ VNPay
+Public
+/payment/banks
+GET
+Lấy danh sách ngân hang thanh toán từ VNPay
+Public
+Nhóm upload đa phương tiện
+Endpoint
+Method
+Tên API
+Quyền hạn
+/upload/single
+POST
+Tải lên 1 tệp tin, hình ảnh
+Authorized User
+/upload/mutiple
+POST
+Tải lên nhièu tệp tin, hình ảnh
+Authorized User
+Nhóm người dùng, bệnh nhân (User/ Client API) 
+Endpoint
+Method
+Tên API
+Quyền hạn
+/me
+GET
+Lấy thông tin cá nhân người dùng đang đăng nhập
+Authorized User
+/me
+PUT
+Cập nhât thông tin người dùng
+Authorized User
+/doctor
+GET
+Lấy ra danh sách bác sĩ đang hoạt động
+Authorized User
+/doctor/{id}
+GET
+Lấy thông tin bác sĩ theo id
+Authorized User
+/specialties
+GET
+Truy xuất danh sách chuyên khoa y tế
+Authorized User
+/specialties/{id}
+GET
+Lấy thông tin chi tiết về chuyên khoa theo id
+Authorized User
+/packages
+GET
+Lấy danh sách gói khám
+Authorized User
+/packages/{id}
+GET
+Lấy thông tin chi tiết theo gói khám
+Authorized User
+/banners
+GET
+Lấy danh sách Banner để hiển thị quảng cáo
+Authorized User
+/schedules
+GET
+Lấy thông tin lịch trống của các bác sĩ
+Authorized User
+/schedules/{id}
+GET
+Lấy thông tin chi tiết lịch trống của bác sĩ theo ID
+Authorized User
+/cart
+GET
+Xem thông tin giỏ hang cá nhân
+Authorized User
+/cart/items
+POST
+Thêm gói khám vào giỏ hàng
+Authorized User
+/cart-quantity/{packageId}
+PUT
+Cập nhật số lượng gói khám trong giỏ
+Authorized User
+/carts/{packageId}
+DELETE
+Xóa gói khám khỏi giỏ hàng
+Authorized User
+/appointments
+POST
+Đặt lịch khám trực tiếp (Khám Offline)
+Authorized User
+/appointments/book-from-order/{id}
+POST
+Đặt lịch khám từ đơn hàng gói khám đã mua
+Authorized User
+/appointments
+GET
+Lấy danh sách lịch sử cuộc hẹn của bản thân
+Authorized User
+/appointments/{id}
+GET
+Lấy thông tin chi tiết cuộc hẹn (Theo ID)
+Authorized User
+/appointments/{id}
+DELETE
+Hủy cuộc hẹn đã đặt (Khi ở trạng thái PENDING)
+Authorized User
+/payment/checkout-cart
+POST
+Tạo đơn hàng & lấy đường dẫn thanh toán VNPay
+Authorized User
+/payment/repay/{id}
+POST
+Tạo lại đường dẫn thanh toán cho đơn hàng chưa trả
+Authorized User
+/orders
+GET
+Lấy danh sách đơn hàng đã mua của bản thân
+Authorized User
+/orders/{id}
+GET
+Lấy thông tin chi tiết đơn hàng (Theo ID)
+Authorized User
+/orders/{id}
+DELETE
+Hủy đơn hàng chưa thanh toán (Theo ID)
+Authorized User
+/medical-records
+GET
+Lấy danh sách Hồ sơ bệnh án của bản thân
+Authorized User
+/medical-records/{id}
+GET
+Lấy thông tin chi tiết Hồ sơ bệnh án (Theo ID)
+Authorized User
+/prescriptions/medical-record/{medicalRecordId}
+GET
+Lấy đơn thuốc theo mã Hồ sơ bệnh án
+Authorized User
+Nhóm bác sĩ (Doctor APIs)
+Endpoint
+Method
+Tên API
+Quyền hạn
+/doctor/schedules
+GET
+Lấy danh sách ca làm việc của Bác sĩ
+Doctor / Admin
+/doctor/schedules/{id}
+GET
+Lấy thông tin chi tiết ca làm việc (Theo ID)
+Doctor / Admin
+/doctor/schedules
+POST
+Đăng ký ca làm việc đơn lẻ mới
+Doctor / Admin
+/doctor/schedules/bulk
+POST
+Đăng ký hàng loạt ca làm việc theo ngày
+Doctor / Admin
+/doctor/schedules/{id}
+PUT
+Cập nhật ca làm việc (Số lượng, Trạng thái)
+Doctor / Admin
+/doctor/appointments
+GET
+Lấy danh sách cuộc hẹn bệnh nhân thuộc ca trực
+Doctor / Admin
+/doctor/appointments/{id}
+GET
+Lấy thông tin chi tiết cuộc hẹn bệnh nhân
+Doctor / Admin
+/doctor/appointments/{id}/status
+PUT
+Cập nhật trạng thái cuộc hẹn (Xác nhận, Khám xong)
+Doctor / Admin
+/doctor/appointments/{id}
+DELETE
+Hủy cuộc hẹn khám bệnh nhân
+Doctor / Admin
+/doctor/medical-records
+GET
+Lấy danh sách Hồ sơ bệnh án do bác sĩ lập
+Doctor / Admin
+/doctor/medical-records/{id}
+GET
+Lấy thông tin chi tiết Hồ sơ bệnh án
+Doctor / Admin
+/doctor/medical-records
+POST
+Tạo mới Hồ sơ bệnh án cho cuộc hẹn
+Doctor / Admin
+/doctor/medical-records/{id}
+PUT
+Cập nhật Hồ sơ bệnh án (Bản nháp DRAFT)
+Doctor / Admin
+/doctor/medical-records/{id}/sign
+PUT
+Ký xác nhận & đóng Hồ sơ bệnh án (Khóa sửa)
+Doctor / Admin
+/doctor/prescriptions/medical-record/{medicalRecordId}
+GET
+Lấy đơn thuốc thuộc Hồ sơ bệnh án
+Doctor / Admin
+/doctor/prescriptions/medical-record/{medicalRecordId}
+POST
+Kê đơn thuốc mới cho Hồ sơ bệnh án
+Doctor / Admin
+/doctor/prescriptions/medical-record/{medicalRecordId}
+PUT
+Cập nhật toàn bộ danh mục đơn thuốc
+Doctor / Admin
+/doctor/prescriptions/{itemId}
+DELETE
+Xóa 01 loại thuốc khỏi đơn
+Doctor / Admin
+/doctor/articles
+GET
+Lấy danh sách bài viết do Bác sĩ biên soạn
+Doctor / Admin
+/doctor/articles/{id}
+GET
+Lấy thông tin chi tiết bài viết (Theo ID)
+Doctor / Admin
+/doctor/articles
+POST
+Tạo mới bài viết y khoa chia sẻ
+Doctor / Admin
+/doctor/articles/{id}
+PUT
+Cập nhật nội dung bài viết y khoa
+Doctor / Admin
+Nhóm quản trị(Admin APIs)
+Endpoint
+Method
+Tên API
+Quyền hạn
+/admin/doctors
+POST
+Tạo mới tài khoản Bác sĩ
+Admin
+/admin/doctors
+GET
+Truy xuất danh sách toàn bộ Bác sĩ
+Admin
+/admin/doctors/{id}
+GET
+Lấy thông tin chi tiết Bác sĩ (Theo ID)
+Admin
+/admin/doctors/{id}
+PUT
+Cập nhật thông tin & giá khám Bác sĩ
+Admin
+/admin/doctors/{id}
+DELETE
+Xóa mềm tài khoản Bác sĩ (Soft Delete)
+Admin
+/admin/doctors-restore/{id}
+POST
+Khôi phục tài khoản Bác sĩ đã xóa mềm
+Admin
+/admin/user
+GET
+Truy xuất danh sách Người dùng hệ thống
+Admin
+/admin/user/{id}
+DELETE
+Xóa mềm tài khoản Người dùng
+Admin
+/admin/user-restore/{id}
+POST
+Khôi phục tài khoản Người dùng đã xóa
+Admin
+/admin/specialties
+GET
+Truy xuất danh sách Chuyên khoa
+Admin
+/admin/specialties/{id}
+GET
+Lấy thông tin chi tiết Chuyên khoa
+Admin
+/admin/specialties
+POST
+Tạo mới Chuyên khoa y tế
+Admin
+/admin/specialties/{id}
+PUT
+Cập nhật thông tin Chuyên khoa
+Admin
+/admin/specialties/{id}
+DELETE
+Xóa mềm Chuyên khoa
+Admin
+/admin/specialties-restore/{id}
+POST
+Khôi phục Chuyên khoa đã xóa
+Admin
+/admin/packages
+GET
+Truy xuất danh sách Gói khám bệnh
+Admin
+/admin/packages/{id}
+GET
+Lấy thông tin chi tiết Gói khám (Kèm HTML)
+Admin
+/admin/packages
+POST
+Tạo mới Gói khám bệnh
+Admin
+/admin/packages/{id}
+PUT
+Cập nhật thông tin Gói khám bệnh
+Admin
+/admin/packages/{id}
+DELETE
+Xóa mềm Gói khám bệnh
+Admin
+/admin/packages-restore/{id}
+POST
+Khôi phục Gói khám bệnh đã xóa
+Admin
+/admin/carts
+GET
+Lấy danh sách Giỏ hàng của tất cả Người dùng
+Admin
+/admin/carts/{id}
+GET
+Lấy thông tin chi tiết Giỏ hàng Người dùng
+Admin
+/admin/banners
+GET
+Lấy danh sách tất cả Banner quảng cáo
+Admin
+/admin/banners
+POST
+Tạo mới Banner quảng cáo
+Admin
+/admin/banners/{id}
+PUT
+Cập nhật thông tin Banner
+Admin
+/admin/banners-status/{id}
+PUT
+Thay đổi trạng thái hiển thị Banner (Bật/Tắt)
+Admin
+/admin/banners/{id}
+DELETE
+Xóa Banner quảng cáo
+Admin
+/admin/schedules
+GET
+Lấy danh sách ca làm việc toàn bộ Bác sĩ
+Admin
+/admin/schedules/{id}
+GET
+Lấy chi tiết ca làm việc (Theo ID)
+Admin
+/admin/schedules
+POST
+Tạo ca làm việc cho Bác sĩ bất kỳ
+Admin
+/admin/schedules/bulk
+POST
+Tạo hàng loạt ca làm việc cho Bác sĩ
+Admin
+/admin/schedules/{id}
+PUT
+Cập nhật thông tin ca làm việc
+Admin
+/admin/schedules/{id}
+DELETE
+Xóa vĩnh viễn ca làm việc (Hard Delete)
+Admin
+/admin/articles
+GET
+Truy xuất danh sách tất cả bài viết y tế
+Admin
+/admin/articles/{id}
+GET
+Lấy thông tin chi tiết bài viết (Theo ID)
+Admin
+/admin/articles
+POST
+Tạo mới bài viết đại diện Phòng khám
+Admin
+/admin/articles/{id}
+PUT
+Cập nhật thông tin bài viết
+Admin
+/admin/articles/{id}
+DELETE
+Xóa mềm bài viết y tế
+Admin
+/admin/orders
+GET
+Quản lý danh sách Đơn hàng toàn hệ thống
+Admin
+/admin/orders/{id}
+GET
+Lấy thông tin chi tiết Đơn hàng
+Admin
+/admin/appointments
+GET
+Quản lý danh sách Cuộc hẹn khám toàn hệ thống
+Admin
+/admin/appointments/{id}
+GET
+Lấy thông tin chi tiết Cuộc hẹn khám
+Admin
+/admin/appointments/{id}/status
+PUT
+Cập nhật trạng thái Cuộc hẹn khám
+Admin
+/admin/appointments/{id}
+DELETE
+Hủy Cuộc hẹn khám bệnh
+Admin
+/admin/medical-records
+GET
+Tra cứu toàn bộ Hồ sơ bệnh án (Chỉ xem)
+Admin
+/admin/medical-records/{id}
+GET
+Xem chi tiết Hồ sơ bệnh án
+Admin
+/admin/prescriptions/medical-record/{medicalRecordId}
+GET
+Tra cứu Đơn thuốc theo Hồ sơ bệnh án (Chỉ xem)
+Admin

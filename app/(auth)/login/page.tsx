@@ -69,7 +69,7 @@ export default function LoginPage() {
         try {
             setIsLoading(true);
             const res = await login(formData);
-            setLogin(res.data.access_token, res.data.user);
+            setLogin(res.access_token, res.user);
             toast.success("Đăng nhập thành công")
             router.push("/");
         } catch (err: unknown) {
