@@ -558,18 +558,25 @@ export const getArticles = async (params?: { page?: number; search?: string; spe
   return MOCK_ARTICLES;
 };
 
-export const getArticleBySlug = async (slug: string): Promise<Article | null> => {
+export const getArticleByIdOrSlug = async (idOrSlug: string | number): Promise<Article | null> => {
+  const queryStr = String(idOrSlug);
   try {
-    const res = await api.get(`/articles/${slug}`);
+    const res = await api.get(`/articles/${queryStr}`);
     if (res.data?.data) {
       return res.data.data;
     }
   } catch (err: any) {
-    console.warn(`[API getArticleBySlug] Failed for "${slug}":`, err?.response?.data || err.message);
+    console.warn(`[API getArticle] Failed for "${queryStr}":`, err?.response?.data || err.message);
   }
-  const found = MOCK_ARTICLES.find((a) => a.slug === slug);
+  const found = MOCK_ARTICLES.find(
+    (a) => a.slug === queryStr || String(a.id) === queryStr
+  );
   return found || null;
 };
+
+export const getArticleBySlug = getArticleByIdOrSlug;
+export const getArticleById = getArticleByIdOrSlug;
+
 
 export const getDoctors = async (params?: { specialty_id?: number; search?: string; pageSize?: number; page?: number }): Promise<Doctor[]> => {
   try {

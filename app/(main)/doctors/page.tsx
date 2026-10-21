@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { Doctor } from "@/app/types/Clinic";
 import { getDoctors } from "@/app/lib/clinic.api";
-import { DoctorDetailModal } from "@/app/components/doctor/DoctorDetailModal";
 import { Pagination } from "@/app/components/common/Pagination";
 import {
   Stethoscope,
@@ -23,7 +23,6 @@ export default function DoctorsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("all");
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 6;
 
@@ -259,16 +258,16 @@ export default function DoctorsPage() {
                       </div>
                     </div>
 
-                    {/* Footer Actions: Button to View Doctor Details (No price, no direct booking) */}
+                    {/* Footer Actions: Link to View Doctor Details Page */}
                     <div className="p-6 pt-0">
                       <div className="pt-3 border-t border-slate-100">
-                        <button
-                          onClick={() => setSelectedDoctor(doctor)}
-                          className="w-full py-2.5 px-4 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-teal-200/60 cursor-pointer shadow-2xs"
+                        <Link
+                          href={`/doctors/${doctor.id}`}
+                          className="w-full py-2.5 px-4 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-teal-200/60 cursor-pointer shadow-2xs group-hover:bg-teal-700 group-hover:text-white group-hover:border-teal-700"
                         >
-                          <Eye className="w-4 h-4 text-teal-700" />
-                          <span>Xem chi tiết</span>
-                        </button>
+                          <Eye className="w-4 h-4" />
+                          <span>Xem chi tiết bác sĩ</span>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -308,12 +307,6 @@ export default function DoctorsPage() {
           </div>
         </div>
       </div>
-
-      {/* Doctor Detail Modal */}
-      <DoctorDetailModal
-        doctor={selectedDoctor}
-        onClose={() => setSelectedDoctor(null)}
-      />
     </>
   );
 }
