@@ -180,7 +180,7 @@ export default function ArticlesPage() {
               return (
                 <Link
                   key={art.id}
-                  href={`/articles/${art.id}`}
+                  href={`/articles/${art.slug || art.id}`}
                   className="group rounded-3xl overflow-hidden border border-slate-200/80 bg-white hover:border-teal-300 hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer"
                 >
                   <div>

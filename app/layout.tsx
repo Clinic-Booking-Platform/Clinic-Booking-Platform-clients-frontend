@@ -13,9 +13,29 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MediCare - Nền Tảng Đặt Lịch Khám Trực Tuyến",
+  title: {
+    default: "MediCare Clinic - Phòng Khám Đa Khoa & Đặt Lịch Khám Trực Tuyến",
+    template: "%s | MediCare Clinic",
+  },
   description:
-    "MediCare - Hệ thống đặt lịch khám trực tuyến hàng đầu, kết nối trực tiếp với đội ngũ bác sĩ chuyên khoa giỏi.",
+    "Hệ thống phòng khám đa khoa tiêu chuẩn quốc tế MediCare Clinic. Đặt lịch khám bác sĩ chuyên khoa, gói tầm soát sức khỏe toàn diện và tư vấn y tế tận tâm.",
+  keywords: [
+    "MediCare Clinic",
+    "phòng khám đa khoa",
+    "đặt lịch khám",
+    "bác sĩ chuyên khoa",
+    "gói khám sức khỏe",
+    "khám tổng quát",
+  ],
+  authors: [{ name: "MediCare Clinic" }],
+  openGraph: {
+    title: "MediCare Clinic - Phòng Khám Đa Khoa & Đặt Lịch Khám Trực Tuyến",
+    description:
+      "Hệ thống phòng khám đa khoa tiêu chuẩn quốc tế MediCare Clinic. Đặt lịch khám nhanh chóng, tiện lợi.",
+    siteName: "MediCare Clinic",
+    locale: "vi_VN",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

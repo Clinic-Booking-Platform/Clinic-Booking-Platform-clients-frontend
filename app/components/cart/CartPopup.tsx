@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useCartStore } from "@/app/store/CartStore";
 import {
   X,
@@ -102,14 +103,14 @@ export const CartPopup: React.FC = () => {
                 <p className="text-sm text-slate-500 max-w-xs mb-6">
                   Bạn chưa thêm gói khám nào. Hãy khám phá các gói khám chất lượng cao của MediCare để chăm sóc sức khỏe.
                 </p>
-                <a
-                  href="#packages"
+                <Link
+                  href="/packages"
                   onClick={closeCart}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-700 text-white text-sm font-medium hover:bg-teal-800 transition-colors shadow-sm shadow-teal-700/20"
                 >
                   <span>Khám phá gói khám</span>
                   <ArrowRight className="w-4 h-4" />
-                </a>
+                </Link>
               </div>
             ) : (
               <div className="space-y-3">
