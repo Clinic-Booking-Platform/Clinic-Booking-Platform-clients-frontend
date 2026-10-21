@@ -26,7 +26,7 @@ import {
 export default function ArticleDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const articleId = params?.id as string;
+  const articleSlug = (params?.slug as string) || (params?.id as string);
 
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,16 +34,16 @@ export default function ArticleDetailPage() {
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
 
   useEffect(() => {
-    if (articleId) {
+    if (articleSlug) {
       setLoading(true);
-      getArticleByIdOrSlug(articleId)
+      getArticleByIdOrSlug(articleSlug)
         .then((res) => {
           setArticle(res);
           // Fetch related articles
           getArticles().then((all) => {
             if (all && all.length > 0) {
               const others = all.filter(
-                (a) => String(a.id) !== String(articleId) && a.slug !== articleId
+                (a) => a.slug !== articleSlug && String(a.id) !== String(articleSlug)
               );
               setRelatedArticles(others.slice(0, 3));
             }
@@ -51,7 +51,7 @@ export default function ArticleDetailPage() {
         })
         .finally(() => setLoading(false));
     }
-  }, [articleId]);
+  }, [articleSlug]);
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -378,7 +378,7 @@ export default function ArticleDetailPage() {
             {relatedArticles.map((art) => (
               <Link
                 key={art.id}
-                href={`/articles/${art.id}`}
+                href={`/articles/${art.slug || art.id}`}
                 className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 hover:border-teal-300 hover:shadow-xl transition-all duration-300 flex flex-col group"
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
