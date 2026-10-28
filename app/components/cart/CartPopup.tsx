@@ -1,23 +1,22 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCartStore } from "@/app/store/CartStore";
 import {
   X,
   Trash2,
   Plus,
   Minus,
-  CalendarCheck,
   ShoppingBag,
   ArrowRight,
   ShieldCheck,
   CreditCard,
-  AlertCircle,
 } from "lucide-react";
 
 export const CartPopup: React.FC = () => {
+  const router = useRouter();
   const {
     items,
     isCartOpen,
@@ -128,7 +127,12 @@ export const CartPopup: React.FC = () => {
                       className="p-3.5 rounded-2xl border border-slate-100 bg-white hover:border-teal-200 transition-all shadow-xs flex gap-3.5"
                     >
                       {/* Image */}
-                      <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                      <Link
+                        href={`/packages/${item.package_id}`}
+                        onClick={closeCart}
+                        className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0"
+                        title={`Xem chi tiết ${item.package.name}`}
+                      >
                         {item.package.thumbnail_url ? (
                           <img
                             src={item.package.thumbnail_url}
@@ -140,15 +144,20 @@ export const CartPopup: React.FC = () => {
                             <ShoppingBag className="w-7 h-7" />
                           </div>
                         )}
-                      </div>
+                      </Link>
 
                       {/* Info & Actions */}
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex items-start justify-between gap-2">
-                            <h5 className="font-semibold text-slate-800 text-sm line-clamp-1">
+                            <Link
+                              href={`/packages/${item.package_id}`}
+                              onClick={closeCart}
+                              className="font-semibold text-slate-800 text-sm line-clamp-1 hover:text-teal-700"
+                              title={`Xem chi tiết ${item.package.name}`}
+                            >
                               {item.package.name}
-                            </h5>
+                            </Link>
                             <button
                               onClick={() => removeItem(item.package_id)}
                               className="text-slate-400 hover:text-rose-500 transition-colors p-1"
@@ -232,7 +241,8 @@ export const CartPopup: React.FC = () => {
                   id="btn-checkout-vnpay-cart"
                   type="button"
                   onClick={() => {
-                    // Chưa thực hiện chức năng thanh toán qua VNPay theo yêu cầu
+                    closeCart();
+                    router.push("/cart");
                   }}
                   className="w-full h-12 rounded-xl bg-gradient-to-r from-teal-700 to-teal-800 hover:from-teal-800 hover:to-teal-900 text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-teal-700/20 active:scale-[0.99] transition-all cursor-pointer"
                 >

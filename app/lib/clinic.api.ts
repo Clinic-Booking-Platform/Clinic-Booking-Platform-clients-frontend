@@ -814,13 +814,21 @@ export const checkoutCartAPI = async (): Promise<CheckoutCartResponse> => {
 export const verifyPaymentReturnAPI = async (queryParams: Record<string, string>): Promise<any> => {
   try {
     const res = await api.get("/payment/vnpay-return", { params: queryParams });
-    return res.data;
+    return res.data?.data ?? res.data;
   } catch (error: any) {
-    // Fallback simulation
+    // Fall back only for local demo/payment simulations.
   }
 
   const rawTxnRef = queryParams.vnp_TxnRef || "";
   const orderCode = rawTxnRef.split("_")[0] ? rawTxnRef : rawTxnRef;
+  if (queryParams.vnp_ResponseCode && queryParams.vnp_ResponseCode !== "00") {
+    return {
+      isSuccess: false,
+      isVerified: false,
+      message: "Thanh toán VNPay không thành công",
+      order_code: orderCode,
+    };
+  }
 
   const orders = getMockOrders();
   const orderIndex = orders.findIndex((o) => o.order_code === orderCode || orderCode.includes(o.order_code));
