@@ -3,7 +3,9 @@ export type User = {
     id: number
     email: string,
     full_name: string,
-    phone_number: string,
+    phone_number: string | null,
+    date_of_birth?: string | null,
+    gender?: string | null,
     avatar: string | null
     roleId: number
     role: string
@@ -13,6 +15,7 @@ type AuthStore = {
     token: string | null
     user: User | null
     setLogin: (token: string, user: User) => void
+    updateUser: (user: Partial<User>) => void
     setLogout: () => void
 }
 const getinitialUser = () => {
@@ -51,6 +54,15 @@ export const userStore = create<AuthStore>()((set) => ({
             user
         });
     },
+    updateUser: (userUpdate: Partial<User>) => {
+        set((state) => {
+            if (!state.user) return state;
+
+            const user = { ...state.user, ...userUpdate };
+            localStorage.setItem("user", JSON.stringify(user));
+            return { user };
+        });
+    },
     setLogout() {
         if (typeof window !== "undefined") {
             localStorage.removeItem("token");
@@ -62,4 +74,3 @@ export const userStore = create<AuthStore>()((set) => ({
         });
     },
 }));
-
