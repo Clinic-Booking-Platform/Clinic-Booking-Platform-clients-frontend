@@ -16,6 +16,7 @@ import {
   HeartPulse,
   PhoneCall,
   PackageCheck,
+  Calendar,
 } from "lucide-react";
 
 export const Header: React.FC = () => {
@@ -179,6 +180,14 @@ export const Header: React.FC = () => {
                       <UserIcon className="w-4 h-4 text-slate-400" />
                       <span>Hồ sơ cá nhân</span>
                     </Link>
+                    <Link
+                      href="/my-appointments"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-colors"
+                    >
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      <span>Lịch hẹn của tôi</span>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
@@ -236,6 +245,18 @@ export const Header: React.FC = () => {
                 </Link>
               );
             })}
+            {isLoggedIn && (
+              <div className="pt-2 border-t border-slate-100 space-y-1">
+                <Link
+                  href="/my-appointments"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 text-sm py-2 px-3 rounded-xl font-medium text-teal-800 bg-teal-50/60"
+                >
+                  <Calendar className="w-4 h-4 text-teal-700" />
+                  <span>Lịch hẹn của tôi</span>
+                </Link>
+              </div>
+            )}
             {!isLoggedIn && (
               <div className="pt-2 border-t border-slate-100 flex gap-2">
                 <Link

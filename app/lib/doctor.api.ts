@@ -1,6 +1,8 @@
 import api from "./api.clients";
 import {
   Doctor,
+  DoctorDetail,
+  DoctorDetailResponse,
   DoctorQueryParams,
   DoctorsResponse,
   DoctorsData,
@@ -123,6 +125,40 @@ export const getDoctors = async (
         pageSize: 6,
         totalPages: 1,
       },
+    };
+  }
+};
+
+export const getDoctorDetail = async (
+  id: number | string
+): Promise<DoctorDetailResponse> => {
+  try {
+    const response = await api.get<DoctorDetailResponse>(`/doctors/${id}`);
+    if (response.data && response.data.data) {
+      return response.data;
+    }
+    throw new Error("Invalid response format");
+  } catch (error) {
+    const numId = Number(id);
+    const fallback =
+      FALLBACK_DOCTORS.find((d) => d.id === numId) || FALLBACK_DOCTORS[0];
+
+    const fallbackDetail: DoctorDetail = {
+      id: fallback.id,
+      user_id: fallback.user_id,
+      specialty_id: fallback.specialty_id,
+      price: Number(fallback.price) || 150000,
+      description: fallback.description,
+      clinic_name: "Phòng khám Đa khoa MediCare",
+      clinic_address: "Số 123 Đường Y Học, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
+      user: fallback.user,
+      specialty: fallback.specialty,
+    };
+
+    return {
+      status: "success",
+      message: "Lấy thông tin bác sĩ thành công (fallback)",
+      data: fallbackDetail,
     };
   }
 };

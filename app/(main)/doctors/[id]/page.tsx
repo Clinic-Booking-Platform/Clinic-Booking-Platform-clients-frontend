@@ -274,11 +274,18 @@ export default function DoctorDetailPage() {
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
-                  href="/packages"
+                  href={`/booking?doctor_id=${doctor.id}`}
                   className="px-6 py-3 rounded-2xl bg-teal-700 hover:bg-teal-800 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-teal-700/25 active:scale-[0.98] flex items-center gap-2 cursor-pointer"
                 >
                   <Calendar className="w-4 h-4" />
-                  <span>Chọn gói khám với bác sĩ</span>
+                  <span>Đặt lịch khám trực tiếp</span>
+                </Link>
+
+                <Link
+                  href="/packages"
+                  className="px-5 py-3 rounded-2xl bg-white hover:bg-teal-50/60 text-teal-800 text-xs sm:text-sm font-semibold transition-all border border-teal-200/80 flex items-center gap-2 cursor-pointer shadow-2xs"
+                >
+                  <span>Gói khám liên quan</span>
                 </Link>
 
                 <a

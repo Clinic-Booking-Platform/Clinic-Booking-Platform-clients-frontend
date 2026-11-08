@@ -70,8 +70,11 @@ export default function LoginPage() {
             setIsLoading(true);
             const res = await login(formData);
             setLogin(res.access_token, res.user);
-            toast.success("Đăng nhập thành công")
-            router.push("/");
+            toast.success("Đăng nhập thành công");
+            const redirectUrl = typeof window !== "undefined"
+                ? new URLSearchParams(window.location.search).get("redirect") || "/"
+                : "/";
+            router.push(redirectUrl);
         } catch (err: unknown) {
             const parsed: FieldErrors = {};
 

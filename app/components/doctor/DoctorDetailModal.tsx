@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Doctor } from "@/app/types/Clinic";
 import {
   X,
@@ -10,6 +11,7 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 
 interface DoctorDetailModalProps {
@@ -133,10 +135,17 @@ export const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({
         <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
           >
             Đóng
           </button>
+          <Link
+            href={`/booking?doctor_id=${doctor.id}`}
+            className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Đặt lịch khám</span>
+          </Link>
         </div>
       </div>
     </div>

@@ -12,18 +12,41 @@ export type DoctorSpecialty = {
   id: number;
   name: string;
   description?: string;
+  image?: string;
 };
+
+export type Specialty = DoctorSpecialty;
 
 export type Doctor = {
   id: number;
   user_id: number;
   specialty_id: number;
   description: string;
-  price: string;
+  price: string | number;
   deleted_at?: string | null;
+  clinic_name?: string;
+  clinic_address?: string;
   user: DoctorUser;
   specialty: DoctorSpecialty;
 };
+
+export interface DoctorDetail {
+  id: number;
+  user_id?: number;
+  specialty_id?: number;
+  price: number | string;
+  description?: string;
+  clinic_name?: string;
+  clinic_address?: string;
+  user: DoctorUser;
+  specialty: DoctorSpecialty;
+}
+
+export interface DoctorDetailResponse {
+  status: string;
+  message?: string;
+  data: DoctorDetail;
+}
 
 export type DoctorPagination = {
   total: number;
