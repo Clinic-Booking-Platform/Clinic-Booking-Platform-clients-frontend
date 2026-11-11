@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { 
   CheckCircle2, 
   Calendar, 
@@ -11,7 +12,8 @@ import {
   ArrowRight, 
   Home, 
   RotateCcw,
-  Stethoscope
+  Stethoscope,
+  X
 } from "lucide-react";
 import { AppointmentData } from "@/app/types/appointment";
 import { DoctorDetail } from "@/app/types/Doctor";
@@ -22,6 +24,8 @@ interface BookingSuccessModalProps {
   appointment: AppointmentData | null;
   doctor: DoctorDetail | null;
   onBookAnother: () => void;
+  onClose?: () => void;
+  onGoHome?: () => void;
 }
 
 export default function BookingSuccessModal({
@@ -29,8 +33,60 @@ export default function BookingSuccessModal({
   appointment,
   doctor,
   onBookAnother,
+  onClose,
+  onGoHome,
 }: BookingSuccessModalProps) {
-  if (!isOpen || !appointment) return null;
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      onBookAnother();
+    }
+  };
+
+  const handleGoHome = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    if (onGoHome) {
+      onGoHome();
+    } else if (onClose) {
+      onClose();
+    } else {
+      onBookAnother();
+    }
+    router.push("/");
+  };
+
+  const handleViewAppointments = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    if (onClose) {
+      onClose();
+    } else {
+      onBookAnother();
+    }
+    router.push("/my-appointments");
+  };
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
+  if (!isOpen || !appointment || !mounted) return null;
 
   const slotInfo = TIME_SLOTS[appointment.time_type as TimeType];
 
@@ -44,16 +100,28 @@ export default function BookingSuccessModal({
     }
   })();
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs animate-in fade-in" />
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      {/* Fullscreen Backdrop */}
+      <div 
+        className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" 
+        onClick={handleClose}
+      />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-10 transition-all animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-10 transition-all">
         {/* Success Header banner */}
-        <div className="bg-gradient-to-br from-teal-600 to-emerald-600 text-white p-6 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center mb-3 ring-4 ring-white/10 animate-in zoom-in-50">
+        <div className="relative bg-gradient-to-br from-teal-600 to-emerald-600 text-white p-6 text-center">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
+            title="Đóng"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          <div className="w-16 h-16 mx-auto rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center mb-3 ring-4 ring-white/10">
             <CheckCircle2 className="w-9 h-9 text-white" />
           </div>
           <h3 className="text-xl font-bold tracking-tight mb-1">
@@ -124,19 +192,20 @@ export default function BookingSuccessModal({
           </div>
 
           <div className="p-3 rounded-xl bg-teal-50 border border-teal-100 text-teal-800 text-xs text-center">
-            Trạng thái: <span className="font-bold uppercase tracking-wider">{appointment.status}</span>. Hệ thống đã ghi nhận lịch hẹn của bạn và gửi thông báo xác nhận.
+            Trạng thái: <span className="font-bold uppercase tracking-wider">{appointment.status}</span>. Bạn vui lòng đến phòng khám trước 10-15 phút để lấy số thứ tự ưu tiên.
           </div>
         </div>
 
         {/* Footer Actions */}
         <div className="p-6 pt-0 space-y-2.5">
-          <Link
-            href="/my-appointments"
+          <button
+            type="button"
+            onClick={handleViewAppointments}
             className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-sm font-semibold shadow-md shadow-teal-700/20 transition-all cursor-pointer"
           >
             <span>Xem danh sách lịch hẹn của tôi</span>
             <ArrowRight className="w-4 h-4" />
-          </Link>
+          </button>
 
           <div className="grid grid-cols-2 gap-2.5 pt-1">
             <button
@@ -148,17 +217,18 @@ export default function BookingSuccessModal({
               <span>Đặt lịch khác</span>
             </button>
 
-            <Link
-              href="/"
+            <button
+              type="button"
+              onClick={handleGoHome}
               className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-all cursor-pointer"
             >
               <Home className="w-3.5 h-3.5 text-slate-500" />
               <span>Về trang chủ</span>
-            </Link>
+            </button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
-

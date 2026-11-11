@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { X, Lock, LogIn, UserPlus } from "lucide-react";
 
@@ -16,11 +17,16 @@ export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({
   message = "Bạn cần đăng nhập để thêm gói khám vào giỏ hàng và thực hiện quy trình mua gói khám.",
 }) => {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden p-6 text-center space-y-5 animate-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
@@ -73,6 +79,7 @@ export const LoginRequiredModal: React.FC<LoginRequiredModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -13,7 +13,7 @@ export const metadata = {
 export default function MainPage() {
   return (
     <div className="flex flex-col">
-      {/* 1. Homepage Banners Carousel */}
+      {/* 1. Homepage Hero Banner with Quick Booking Card */}
       <BannerSection />
 
       {/* 2. Gói khám sức khỏe (Cho phép người dùng thêm gói khám vào giỏ hàng) */}

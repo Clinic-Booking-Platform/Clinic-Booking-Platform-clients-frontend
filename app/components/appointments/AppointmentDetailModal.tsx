@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { 
   X, 
@@ -41,6 +42,11 @@ export default function AppointmentDetailModal({
   const [detail, setDetail] = useState<AppointmentDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch detail whenever modal opens
   useEffect(() => {
@@ -85,7 +91,7 @@ export default function AppointmentDetailModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const slotConfig = detail ? TIME_SLOTS[detail.time_type as TimeType] : null;
   const timeLabel = slotConfig
@@ -111,8 +117,8 @@ export default function AppointmentDetailModal({
     detail?.status === "CONFIRMED" &&
     Boolean(detail?.meeting_link);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
@@ -435,7 +441,8 @@ export default function AppointmentDetailModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

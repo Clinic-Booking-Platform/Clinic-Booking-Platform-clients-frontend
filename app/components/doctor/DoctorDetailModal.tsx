@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { Doctor } from "@/app/types/Clinic";
 import {
@@ -23,12 +24,18 @@ export const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({
   doctor,
   onClose,
 }) => {
-  if (!doctor) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!doctor || !mounted) return null;
 
   const isAvailable = !doctor.deleted_at && doctor.status !== "INACTIVE";
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-gradient-to-r from-teal-800 to-teal-700 text-white flex items-center justify-between shrink-0">
@@ -148,6 +155,7 @@ export const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({
           </Link>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

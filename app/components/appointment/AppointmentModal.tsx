@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useCartStore } from "@/app/store/CartStore";
 import { userStore } from "@/app/store/AuthStore";
 import { Doctor, TIME_SLOTS } from "@/app/types/Clinic";
@@ -35,6 +36,11 @@ export const AppointmentModal: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Form states
   const [selectedPkgId, setSelectedPkgId] = useState<number>(0);
@@ -85,7 +91,7 @@ export const AppointmentModal: React.FC = () => {
     }
   }, [isAppointmentModalOpen, selectedPackage, items, currentUser]);
 
-  if (!isAppointmentModalOpen) return null;
+  if (!isAppointmentModalOpen || !mounted) return null;
 
   // Selected package details
   const activePackage =
@@ -159,8 +165,8 @@ export const AppointmentModal: React.FC = () => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="px-6 py-5 bg-gradient-to-r from-teal-800 to-teal-700 text-white flex items-center justify-between shrink-0">
@@ -491,6 +497,7 @@ export const AppointmentModal: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
