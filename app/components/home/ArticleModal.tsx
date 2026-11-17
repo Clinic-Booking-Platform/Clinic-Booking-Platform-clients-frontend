@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Article } from "@/app/types/Clinic";
 import { X, Calendar, Eye, User, BookOpen, Share2 } from "lucide-react";
 
@@ -13,7 +14,13 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   article,
   onClose,
 }) => {
-  if (!article) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!article || !mounted) return null;
 
   const dateStr = new Date(article.created_at).toLocaleDateString("vi-VN", {
     year: "numeric",
@@ -21,8 +28,8 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
     day: "numeric",
   });
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
       <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
@@ -120,6 +127,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

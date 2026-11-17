@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import Link from "next/link";
 import { Doctor } from "@/app/types/Clinic";
 import {
   X,
@@ -10,6 +12,7 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 
 interface DoctorDetailModalProps {
@@ -21,12 +24,18 @@ export const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({
   doctor,
   onClose,
 }) => {
-  if (!doctor) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!doctor || !mounted) return null;
 
   const isAvailable = !doctor.deleted_at && doctor.status !== "INACTIVE";
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-gradient-to-r from-teal-800 to-teal-700 text-white flex items-center justify-between shrink-0">
@@ -133,12 +142,20 @@ export const DoctorDetailModal: React.FC<DoctorDetailModalProps> = ({
         <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
           >
             Đóng
           </button>
+          <Link
+            href={`/booking?doctor_id=${doctor.id}`}
+            className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Đặt lịch khám</span>
+          </Link>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

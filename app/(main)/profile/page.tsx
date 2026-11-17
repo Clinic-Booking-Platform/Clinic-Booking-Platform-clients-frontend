@@ -15,7 +15,6 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronRight,
-  Clock3,
   ImagePlus,
   LoaderCircle,
   Mail,
@@ -24,7 +23,6 @@ import {
   Phone,
   Save,
   ShieldCheck,
-  Stethoscope,
   UserRound,
   X,
 } from "lucide-react";
@@ -35,9 +33,7 @@ import {
   updateMyProfile,
   uploadProfileAvatar,
 } from "@/app/lib/auth.api";
-import { getUserAppointmentsAPI } from "@/app/lib/clinic.api";
 import { userStore } from "@/app/store/AuthStore";
-import type { Appointment } from "@/app/types/Clinic";
 
 type ProfileFormData = {
   full_name: string;
@@ -50,40 +46,6 @@ type ProfileFormData = {
 const subscribeToHydration = () => () => {};
 const getHydrationSnapshot = () => true;
 const getServerHydrationSnapshot = () => false;
-
-function sortAppointmentsByDate(appointments: Appointment[]) {
-  return [...appointments].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-}
-
-const statusLabels: Record<Appointment["status"], string> = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đã xác nhận",
-  COMPLETED: "Đã hoàn thành",
-  CANCELLED: "Đã hủy",
-  NO_SHOW: "Không đến",
-};
-
-const statusStyles: Record<Appointment["status"], string> = {
-  PENDING: "bg-amber-50 text-amber-800",
-  CONFIRMED: "bg-teal-50 text-teal-800",
-  COMPLETED: "bg-slate-100 text-slate-700",
-  CANCELLED: "bg-rose-50 text-rose-700",
-  NO_SHOW: "bg-slate-100 text-slate-600",
-};
-
-function formatAppointmentDate(value: string) {
-  const date = new Date(`${value.slice(0, 10)}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-}
 
 function formatDateOfBirth(value?: string | null) {
   if (!value) return "Chưa cập nhật";
@@ -138,42 +100,6 @@ function getProfileErrorMessage(error: unknown) {
     : "Không thể cập nhật hồ sơ. Vui lòng thử lại.";
 }
 
-function AppointmentRow({ appointment }: { appointment: Appointment }) {
-  const status = statusLabels[appointment.status] ? appointment.status : "PENDING";
-  const doctorName = appointment.doctor?.user.full_name ?? "Thông tin bác sĩ đang được cập nhật";
-
-  return (
-    <article className="flex flex-col gap-4 border-b border-slate-100 py-5 last:border-b-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-start gap-3.5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
-          <Stethoscope className="h-5 w-5" aria-hidden="true" />
-        </div>
-        <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-900">{doctorName}</p>
-          <p className="mt-1 truncate text-sm text-slate-500">
-            {appointment.package?.name ?? appointment.doctor?.specialty?.name ?? "Lịch khám"}
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-              {formatAppointmentDate(appointment.date)}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-              {appointment.time_type}
-            </span>
-          </div>
-        </div>
-      </div>
-      <span
-        className={`w-fit shrink-0 rounded-md px-2.5 py-1.5 text-xs font-semibold ${statusStyles[status]}`}
-      >
-        {statusLabels[status]}
-      </span>
-    </article>
-  );
-}
-
 export default function ProfilePage() {
   const { user, token, updateUser } = userStore();
   const isReady = useSyncExternalStore(
@@ -181,10 +107,6 @@ export default function ProfilePage() {
     getHydrationSnapshot,
     getServerHydrationSnapshot
   );
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
-  const [appointmentsError, setAppointmentsError] = useState(false);
-  const [showAllAppointments, setShowAllAppointments] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -220,34 +142,6 @@ export default function ProfilePage() {
       isCurrent = false;
     };
   }, [isReady, token, updateUser]);
-
-  useEffect(() => {
-    if (!isReady || !token || !user) return;
-
-    let isCurrent = true;
-
-    Promise.resolve()
-      .then(() => {
-        if (isCurrent) setIsLoadingAppointments(true);
-        return getUserAppointmentsAPI();
-      })
-      .then((results) => {
-        if (isCurrent) {
-          setAppointments(sortAppointmentsByDate(results));
-        }
-      })
-      .catch((error: unknown) => {
-        console.error("Unable to load profile appointments", error);
-        if (isCurrent) setAppointmentsError(true);
-      })
-      .finally(() => {
-        if (isCurrent) setIsLoadingAppointments(false);
-      });
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [isReady, token, user]);
 
   if (!isReady) {
     return (
@@ -296,9 +190,6 @@ export default function ProfilePage() {
     .slice(-2)
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
-  const visibleAppointments = showAllAppointments
-    ? appointments
-    : appointments.slice(0, 4);
 
   const handleEditProfile = () => {
     setProfileForm(getProfileFormData(user));
@@ -401,17 +292,10 @@ export default function ProfilePage() {
                   Hồ sơ cá nhân
                 </h1>
                 <p className="mt-2 text-sm text-white/70">
-                  Quản lý thông tin và theo dõi lịch khám của bạn.
+                  Quản lý và cập nhật thông tin tài khoản của bạn.
                 </p>
               </div>
             </div>
-            <a
-              href="#appointments"
-              className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-white/20 px-4 text-sm font-medium text-white transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Xem lịch hẹn
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </a>
           </div>
         </header>
 
@@ -656,112 +540,35 @@ export default function ProfilePage() {
                     </div>
                   </dl>
                   <p className="mt-1 rounded-xl bg-[#f6f8f7] px-4 py-3 text-xs leading-5 text-slate-500">
-                    Cập nhật thông tin để hồ sơ và lịch hẹn của bạn luôn chính xác.
+                    Cập nhật thông tin để hồ sơ của bạn luôn chính xác.
                   </p>
                 </>
-              )}
-            </section>
-
-            <section
-              id="appointments"
-              aria-labelledby="appointments-title"
-              className="scroll-mt-28 rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_-40px_rgba(15,23,42,0.3)] sm:p-8"
-            >
-              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-100 pb-5">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
-                    Chăm sóc sức khỏe
-                  </p>
-                  <h2 id="appointments-title" className="mt-2 text-xl font-semibold text-slate-900">
-                    Lịch hẹn của tôi
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Theo dõi các cuộc hẹn khám gần đây.
-                  </p>
-                </div>
-                <Link
-                  href="/doctors"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-800 transition hover:text-teal-950"
-                >
-                  Đặt lịch khám
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </div>
-
-              {appointmentsError ? (
-                <div className="py-8 text-center">
-                  <p className="text-sm font-medium text-rose-700">
-                    Không thể tải lịch hẹn lúc này.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAppointmentsError(false);
-                      setIsLoadingAppointments(true);
-                      getUserAppointmentsAPI()
-                        .then((results) => setAppointments(sortAppointmentsByDate(results)))
-                        .catch((error: unknown) => {
-                          console.error("Unable to reload profile appointments", error);
-                          setAppointmentsError(true);
-                        })
-                        .finally(() => setIsLoadingAppointments(false));
-                    }}
-                    className="mt-2 rounded-lg text-sm font-semibold text-teal-800 transition hover:text-teal-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
-                  >
-                    Thử tải lại
-                  </button>
-                </div>
-              ) : isLoadingAppointments ? (
-                <div className="space-y-4 py-6" aria-label="Đang tải lịch hẹn">
-                  {[0, 1].map((item) => (
-                    <div key={item} className="flex animate-pulse gap-4">
-                      <div className="h-11 w-11 rounded-2xl bg-slate-100" />
-                      <div className="flex-1 space-y-2 py-1">
-                        <div className="h-4 w-1/3 rounded bg-slate-100" />
-                        <div className="h-3 w-1/2 rounded bg-slate-100" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : appointments.length ? (
-                <>
-                  <div>
-                    {visibleAppointments.map((appointment) => (
-                      <AppointmentRow key={appointment.id} appointment={appointment} />
-                    ))}
-                  </div>
-                  {appointments.length > 4 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowAllAppointments((value) => !value)}
-                      className="mt-5 rounded-lg text-sm font-semibold text-teal-800 transition hover:text-teal-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
-                    >
-                      {showAllAppointments ? "Thu gọn lịch hẹn" : "Xem tất cả lịch hẹn"}
-                    </button>
-                  )}
-                </>
-              ) : (
-                <div className="py-10 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[20px] bg-slate-50 text-slate-500">
-                    <CalendarDays className="h-6 w-6" aria-hidden="true" />
-                  </div>
-                  <h3 className="mt-4 font-semibold text-slate-900">Chưa có lịch hẹn nào</h3>
-                  <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-slate-500">
-                    Lịch khám đã đặt sẽ xuất hiện tại đây để bạn tiện theo dõi.
-                  </p>
-                  <Link
-                    href="/doctors"
-                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 active:scale-[0.98]"
-                  >
-                    Tìm bác sĩ
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  </Link>
-                </div>
               )}
             </section>
           </main>
 
           <aside className="space-y-6">
+            <section className="rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_-40px_rgba(15,23,42,0.3)]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
+                <CalendarDays className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
+                Lịch trình khám bệnh
+              </p>
+              <h2 className="mt-1 text-lg font-semibold text-slate-900">
+                Lịch hẹn của tôi
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Xem toàn bộ lịch hẹn, tình trạng xác nhận, vào phòng khám online và xem đơn thuốc tại trang Quản lý lịch hẹn.
+              </p>
+              <Link
+                href="/my-appointments"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-teal-800 shadow-xs"
+              >
+                Xem lịch hẹn của tôi
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            </section>
             <section className="overflow-hidden rounded-[24px] border border-[#d5e9e2] bg-[#eaf4f0] p-6 sm:p-7">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-teal-800">
                 <ShieldCheck className="h-5 w-5" aria-hidden="true" />
